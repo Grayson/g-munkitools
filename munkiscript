@@ -1,0 +1,31 @@
+#!/usr/bin/env sh
+
+uuid=`uuidgen`
+outdir="/tmp/munkiscript-tmp/$uuid"
+mkdir -p $outdir
+
+wd=`pwd`
+
+if [[ -d "$1" ]]; then
+	cp "$1/*" $outdir
+elif [[ -f "$1" ]]; then
+	cp "$1" $outdir
+fi
+
+dmg=`basename "$1"`
+hdiutil create -srcfolder /tmp/munkiscript-tmp/ "$dmg".dmg
+
+echo "#!/usr/bin/env sh" > /tmp/munkiscript-tmp/postflight
+echo "sh /Library/Managed\ Installs/Scripts/$uuid/*.sh" >> /tmp/munkiscript-tmp/postflight
+echo "python /Library/Managed\ Installs/Scripts/$uuid/*.py" >> /tmp/munkiscript-tmp/postflight
+echo "ruby /Library/Managed\ Installs/Scripts/$uuid/*.rb" >> /tmp/munkiscript-tmp/postflight
+echo "perl /Library/Managed\ Installs/Scripts/$uuid/*.pl" >> /tmp/munkiscript-tmp/postflight
+
+echo "#!/usr/bin/env sh" > /tmp/munkiscript-tmp/preflight
+echo "if [[ ! -d /Library/Managed\ Installs/Scripts ]]; then" >> /tmp/munkiscript-tmp/preflight
+echo "mkdir -p /Library/Managed\ Installs/Scripts" >> /tmp/munkiscript-tmp/preflight
+echo "fi" >> /tmp/munkiscript-tmp/preflight
+
+makepkginfo -i $uuid -d /Library/Managed\ Installs/Scripts --displayname="$dmg" --pkgname="$dmg" --preinstall_script=/tmp/munkiscript-tmp/preflight --postinstall_script=/tmp/munkiscript-tmp/postflight "$dmg.dmg" > "$dmg".plist
+defaults write "$wd/$dmg" name "$dmg"
+rm -r /tmp/munkiscript-tmp
