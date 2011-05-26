@@ -1,0 +1,116 @@
+#!/usr/bin/env sh
+
+function import () {
+	# $1 - dmg
+	# $2 - pkginfo plist
+	
+	## Do imports if requested and possible.
+	repo=`defaults read com.googlecode.munki.munkiimport repo_path 2> /dev/null`
+	if [[ $repo == "" || ! -d "$repo" ]]; then
+		exit 1
+	fi
+
+	echo "Would you like to import these tools into the repository? \c"
+	read should_import
+	if [[ $should_import == y* || $should_import == Y* ]]; then
+		mv "$1" "$repo"/pkgs/
+		mv "$2" "$repo"/pkgsinfo/
+	fi
+
+	echo "Rebuild catalogs? \c"
+	read should_rebuild
+	if [[ $should_rebuild == y* || $should_rebuild == Y* ]]; then
+		/usr/local/munki/makecatalogs $repo
+	fi
+}
+
+function createDiskImage () {
+	# $1 file or folder to put onto a blank disk image
+	# $2 name
+	# echo "Creating disk image..."
+	if [[ "$1" == "" || ! -e $1 ]]; then
+		exit -1
+	fi
+	mkdir -p /tmp/"$2"
+	cp "$1" /tmp/"$2"
+	hdiutil create -srcfolder /tmp/"$2" "$2".dmg > /dev/null
+	rm -r /tmp/"$2"
+	local wd=`pwd`
+	echo "$wd/$2".dmg
+}
+
+function createPkgInfo () {
+	# $1 - Path to dmg
+	# $2 - Path to destination
+	# $3 - Name
+	# $4 - File to be installed
+	ext=`defaults read com.googlecode.munki.munkiimport pkginfo_extension 2> /dev/null`
+	if [[ $ext != "" ]]; then
+		ext=".$ext"
+	fi
+	/usr/local/munki/makepkginfo -i "$4" -d "$2" --displayname="$3" "$1" > "$3$ext"
+	local wd=`pwd`
+	echo "$wd/$3$ext"
+}
+
+function import () {
+	# $1 - Path to dmg
+	# $2 - Path to pkginfo
+	repo=`defaults read com.googlecode.munki.munkiimport repo_path 2> /dev/null`
+	if [[ $repo == "" || ! -d "$repo" ]]; then
+		exit 1
+	fi
+
+	echo "Would you like to import these tools into the repository? \c"
+	read should_import
+	if [[ $should_import == y* || $should_import == Y* ]]; then
+		mv "$1" "$repo"/pkgs/
+		mv "$2" "$repo"/pkgsinfo/
+	fi
+
+	echo "Rebuild catalogs? \c"
+	read should_rebuild
+	if [[ $should_rebuild == y* || $should_rebuild == Y* ]]; then
+		/usr/local/munki/makecatalogs $repo
+	fi	
+}
+
+function main () {
+	local file=""
+	local dest=""
+	local name=""
+	while getopts "n:d:f:" opt; do
+		case $opt in
+			n)
+				name="$OPTARG"
+				;;
+			d)
+				dest="$OPTARG"
+				;;
+			f)
+				file="$OPTARG"
+				;;
+		esac
+	done
+	if [[ $file == "" ]]; then
+		echo "-f cannot be empty."
+		exit -1
+	fi
+
+	if [[ "$dest" == "" ]]; then
+		echo "-d cannot be empty."
+		exit -1
+	fi
+
+	if [[ "$name" == "" ]]; then
+		local tmp=`basename "$file"`
+		local name=${tmp%%.*}
+	fi
+	
+	local filename=`basename "$file"`
+	local dmg=`createDiskImage "$file" "$name"`
+	local pkginfo=`createPkgInfo "$dmg" "$dest" "$name" "$filename"`
+	import "$dmg" "$pkginfo"
+}
+
+main $*
