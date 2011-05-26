@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
+# Grayson Hansard, 2011
+# info@fromconcentratesoftware.com
 
 uuid=`uuidgen`
 outdir="/tmp/munkiscript-tmp/$uuid"

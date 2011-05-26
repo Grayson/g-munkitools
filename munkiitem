@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
+# Grayson Hansard, 2011
+# info@fromconcentratesoftware.com
 
 function import () {
 	# $1 - dmg
