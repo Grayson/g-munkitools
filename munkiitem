@@ -64,8 +64,8 @@ function import () {
 	echo "Would you like to import these tools into the repository? \c"
 	read should_import
 	if [[ $should_import == y* || $should_import == Y* ]]; then
-		mv "$1" "$repo"/pkgs/
-		mv "$2" "$repo"/pkgsinfo/
+		cp "$1" "$repo"/pkgs/
+		cp "$2" "$repo"/pkgsinfo/
 	fi
 
 	echo "Rebuild catalogs? \c"
