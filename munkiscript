@@ -3,6 +3,7 @@
 uuid=`uuidgen`
 outdir="/tmp/munkiscript-tmp/$uuid"
 mkdir -p $outdir
+ext=`defaults read com.googlecode.munki.munkiimport pkginfo_extension 2> /dev/null`
 
 wd=`pwd`
 
@@ -26,7 +27,7 @@ echo "if [[ ! -d /Library/Managed\ Installs/Scripts ]]; then" >> /tmp/munkiscrip
 echo "mkdir -p /Library/Managed\ Installs/Scripts" >> /tmp/munkiscript-tmp/preflight
 echo "fi" >> /tmp/munkiscript-tmp/preflight
 
-makepkginfo -i $uuid -d /Library/Managed\ Installs/Scripts --displayname="$dmg" --pkgname="$dmg" --preinstall_script=/tmp/munkiscript-tmp/preflight --postinstall_script=/tmp/munkiscript-tmp/postflight "$dmg.dmg" > "$dmg".plist
+makepkginfo -i $uuid -d /Library/Managed\ Installs/Scripts --displayname="$dmg" --pkgname="$dmg" --preinstall_script=/tmp/munkiscript-tmp/preflight --postinstall_script=/tmp/munkiscript-tmp/postflight "$dmg.dmg" > "$dmg$ext"
 defaults write "$wd/$dmg" name "$dmg"
 rm -r /tmp/munkiscript-tmp
 
@@ -41,7 +42,7 @@ echo "Would you like to import these tools into the repository? \c"
 read should_import
 if [[ $should_import == y* || $should_import == Y* ]]; then
 	mv "$dmg.dmg" "$repo"/pkgs/
-	mv "$dmg.plist" "$repo"/pkgsinfo/
+	mv "$dmg$ext" "$repo"/pkgsinfo/
 fi
 
 echo "Rebuild catalogs? \c"
