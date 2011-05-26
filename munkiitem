@@ -95,8 +95,7 @@ function main () {
 	fi
 
 	if [[ "$dest" == "" ]]; then
-		echo "-d cannot be empty."
-		exit -1
+		dest=`dirname "$file"`
 	fi
 
 	if [[ "$name" == "" ]]; then
