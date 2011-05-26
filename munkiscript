@@ -29,3 +29,23 @@ echo "fi" >> /tmp/munkiscript-tmp/preflight
 makepkginfo -i $uuid -d /Library/Managed\ Installs/Scripts --displayname="$dmg" --pkgname="$dmg" --preinstall_script=/tmp/munkiscript-tmp/preflight --postinstall_script=/tmp/munkiscript-tmp/postflight "$dmg.dmg" > "$dmg".plist
 defaults write "$wd/$dmg" name "$dmg"
 rm -r /tmp/munkiscript-tmp
+
+
+## Do imports if requested and possible.
+repo=`defaults read com.googlecode.munki.munkiimport repo_path 2> /dev/null`
+if [[ $repo == "" || ! -d "$repo" ]]; then
+	exit 1
+fi
+
+echo "Would you like to import these tools into the repository? \c"
+read should_import
+if [[ $should_import == y* || $should_import == Y* ]]; then
+	mv "$dmg.dmg" "$repo"/pkgs/
+	mv "$dmg.plist" "$repo"/pkgsinfo/
+fi
+
+echo "Rebuild catalogs? \c"
+read should_rebuild
+if [[ $should_rebuild == y* || $should_rebuild == Y* ]]; then
+	/usr/local/munki/makecatalogs $repo
+fi
