@@ -34,7 +34,11 @@ function createDiskImage () {
 		exit -1
 	fi
 	mkdir -p /tmp/"$2"
-	cp "$1" /tmp/"$2"
+	if [[ -d "$1" ]]; then
+		cp -r "$1" /tmp/"$2"
+	else
+		cp "$1" /tmp/"$2"
+	fi
 	hdiutil create -srcfolder /tmp/"$2" "$2".dmg > /dev/null
 	rm -r /tmp/"$2"
 	local wd=`pwd`
