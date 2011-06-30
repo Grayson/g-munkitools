@@ -96,7 +96,10 @@ function main () {
 		esac
 	done
 	if [[ $file == "" ]]; then
-		echo "-f cannot be empty."
+		echo "Usage:"
+		echo "	-f = filename to import"
+		echo "	-d = destination to install"
+		echo "	-n = name in munki"
 		exit -1
 	fi
 
@@ -115,4 +118,4 @@ function main () {
 	import "$dmg" "$pkginfo"
 }
 
-main $*
+main "$@"

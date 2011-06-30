@@ -19,10 +19,7 @@ dmg=`basename "$1"`
 hdiutil create -srcfolder /tmp/munkiscript-tmp/ "$dmg".dmg
 
 echo "#!/usr/bin/env sh" > /tmp/munkiscript-tmp/postflight
-echo "sh /Library/Managed\ Installs/Scripts/$uuid/*.sh" >> /tmp/munkiscript-tmp/postflight
-echo "python /Library/Managed\ Installs/Scripts/$uuid/*.py" >> /tmp/munkiscript-tmp/postflight
-echo "ruby /Library/Managed\ Installs/Scripts/$uuid/*.rb" >> /tmp/munkiscript-tmp/postflight
-echo "perl /Library/Managed\ Installs/Scripts/$uuid/*.pl" >> /tmp/munkiscript-tmp/postflight
+echo "for script in /Library/Managed\ Installs/Scripts/$uuid/*; do if [[ \$script == *.sh ]]; then /bin/sh \"\$script\"; fi;if [[ \$script == *.rb ]]; then /usr/bin/ruby \"\$script\"; fi;if [[ \$script == *.py ]]; then /usr/bin/python \"\$script\"; fi;if [[ \$script == *.pl ]]; then /usr/bin/perl \"\$script\"; fi;done" >> /tmp/munkiscript-tmp/postflight
 
 echo "#!/usr/bin/env sh" > /tmp/munkiscript-tmp/preflight
 echo "if [[ ! -d /Library/Managed\ Installs/Scripts ]]; then" >> /tmp/munkiscript-tmp/preflight
@@ -43,8 +40,8 @@ fi
 echo "Would you like to import these tools into the repository? \c"
 read should_import
 if [[ $should_import == y* || $should_import == Y* ]]; then
-	mv "$dmg.dmg" "$repo"/pkgs/
-	mv "$dmg$ext" "$repo"/pkgsinfo/
+	cp "$dmg.dmg" "$repo"/pkgs/
+	cp "$dmg$ext" "$repo"/pkgsinfo/
 fi
 
 echo "Rebuild catalogs? \c"
